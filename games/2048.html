@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>2048 Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #faf8ef;
+      margin: 0;
+      padding: 20px;
+    }
+    canvas {
+      background: #bbada0;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>2048</h1>
+  <canvas id="game" width="500" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const size = 4;
+    let board = [...Array(size)].map(() => Array(size).fill(0));
+
+    function drawBoard() {
+      const w = canvas.width / size;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          ctx.fillStyle = board[r][c] === 0 ? "#cdc1b4" : "#eee4da";
+          ctx.fillRect(c * w + 5, r * w + 5, w - 10, w - 10);
+          if (board[r][c] !== 0) {
+            ctx.fillStyle = "#776e65";
+            ctx.font = "bold 30px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(board[r][c], c * w + w / 2, r * w + w / 2);
+          }
+        }
+      }
+    }
+
+    function addRandomTile() {
+      const empty = [];
+      for (let r = 0; r < size; r++)
+        for (let c = 0; c < size; c++)
+          if (board[r][c] === 0) empty.push([r, c]);
+      if (empty.length) {
+        const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+        board[r][c] = Math.random() < 0.9 ? 2 : 4;
+      }
+    }
+
+    function move(dir) {
+      let moved = false;
+      for (let i = 0; i < size; i++) {
+        let line = [];
+        for (let j = 0; j < size; j++) {
+          let val = dir === "left" || dir === "right" ? board[i][j] : board[j][i];
+          if (val !== 0) line.push(val);
+        }
+        if (dir === "right" || dir === "down") line.reverse();
+        for (let j = 0; j < line.length - 1; j++) {
+          if (line[j] === line[j + 1]) {
+            line[j] *= 2;
+            line[j + 1] = 0;
+          }
+        }
+        line = line.filter(n => n !== 0);
+        while (line.length < size) line.push(0);
+        if (dir === "right" || dir === "down") line.reverse();
+        for (let j = 0; j < size; j++) {
+          let newVal = line[j];
+          if (dir === "left" || dir === "right") {
+            if (board[i][j] !== newVal) moved = true;
+            board[i][j] = newVal;
+          } else {
+            if (board[j][i] !== newVal) moved = true;
+            board[j][i] = newVal;
+          }
+        }
+      }
+      if (moved) {
+        addRandomTile();
+        drawBoard();
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        move(e.key.replace("Arrow", "").toLowerCase());
+      }
+    });
+
+    addRandomTile();
+    addRandomTile();
+    drawBoard();
+  </script>
+</body>
+</html>
